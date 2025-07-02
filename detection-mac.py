@@ -12,6 +12,10 @@ from collections import deque
 # OPENCV-PYTHON
 # MEDIAPIPE
 
+# ADJUST HAND BEND VALUES BASED ON THE HIGHEST AND LOWEST VALUES ON PRINTED VALUES IN TERMINAL
+handBendMax = 2.5
+handBendMin = 1.5
+
 class InputSmoother:
     def __init__(self, window_size=10):
         self.window_size = window_size
@@ -138,8 +142,8 @@ while True:
             # Finding Hand Bend
             reference_distance = calculate_distance((wrist[0], wrist[1]), (thumb_cmc[0], thumb_cmc[1]))
             hand_bend = calculate_distance((wrist[0], wrist[1]), (index_mcp[0], index_mcp[1]))/reference_distance
-            print(hand_bend)
-            distanceMapped = round(map_value(hand_bend, 1.5, 2.5, 90, 180), 2)
+            print("hand bend raw value: " + str(hand_bend))
+            distanceMapped = round(map_value(hand_bend, handBendMin, handBendMax, 90, 180), 2)
             smoothed_distance = firstJointSmoother.add_input(distanceMapped)
             controller.set_servo_angle(SERVO_VERTICAL_3, smoothed_distance)
             cv2.putText(image, f"Hand Bend: {smoothed_distance}", (10, 120), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 200, 200), 2, cv2.LINE_AA)
