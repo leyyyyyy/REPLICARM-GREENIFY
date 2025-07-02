@@ -50,7 +50,7 @@ def map_value(value, from_low, from_high, to_low, to_high):
 mp_draw = mp.solutions.drawing_utils
 mp_hand = mp.solutions.hands
 hands = mp_hand.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.5, max_num_hands=1)
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(1)
 
 FRAME_CENTER_X = int(video.get(3) / 2)
 FRAME_CENTER_Y = int(video.get(4) / 2)
