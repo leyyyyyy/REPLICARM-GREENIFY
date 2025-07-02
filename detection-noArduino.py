@@ -7,6 +7,8 @@ import time  # For delay control
 from cvfpscalc import CvFpsCalc
 from collections import deque
 
+
+
 # IF WEBCAM INDEX OUT OF RANGE, TRY CHANGING VIDEOCAPTURE(0) -> VIDEOCAPTURE(1)
 # LIBRARIES:
 # OPENCV-PYTHON
@@ -16,9 +18,13 @@ from collections import deque
 handBendMax = 2.5
 handBendMin = 1.5
 
+# ADJUST SCREEN VALUES (DETERMINES HOW BIG WINDOW IS)
+screenSizeMultiplier = 1.5
+
+
 
 class InputSmoother:
-    def __init__(self, window_size=10):
+    def __init__(self, window_size=7):
         self.window_size = window_size
         self.inputs = deque(maxlen=window_size)
 
@@ -44,7 +50,7 @@ def map_value(value, from_low, from_high, to_low, to_high):
 mp_draw = mp.solutions.drawing_utils
 mp_hand = mp.solutions.hands
 hands = mp_hand.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.5, max_num_hands=1)
-video = cv2.VideoCapture(1)
+video = cv2.VideoCapture(0)
 
 FRAME_CENTER_X = int(video.get(3) / 2)
 FRAME_CENTER_Y = int(video.get(4) / 2)
@@ -135,7 +141,7 @@ while True:
             center_HandMap = round(map_value(center_HandYAxis, 100, 0, 0, 80))
             # print(center_HandYAxis)
             smoothed_distance2 = secondJointSmoother.add_input(center_HandMap)
-            cv2.putText(image, f"Y Axis: {smoothed_distance2}", (10, 150), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 200, 200), 2, cv2.LINE_AA)
+            cv2.putText(image, f"Y Axis: {round(smoothed_distance2, 1)}", (10, 90), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 0), 1, cv2.LINE_AA)
             # controller.set_servo_angle(SERVO_VERTICAL_2, smoothed_distance2)
             # controller.set_servo_angle(SERVO_VERTICAL_1, 70)
 
@@ -147,7 +153,7 @@ while True:
             distanceMapped = round(map_value(hand_bend, handBendMin, handBendMax, 90, 180), 2)
             smoothed_distance = firstJointSmoother.add_input(distanceMapped)
             # controller.set_servo_angle(SERVO_VERTICAL_3, smoothed_distance)
-            cv2.putText(image, f"Hand Bend: {smoothed_distance}", (10, 120), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 200, 200), 2, cv2.LINE_AA)
+            cv2.putText(image, f"Hand Bend: {round(smoothed_distance, 1)}", (10, 120), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 0), 1, cv2.LINE_AA)
 
             # Wrist circle
             cv2.circle(image, (lmList[0][1], lmList[0][2]), 7, (100, 255, 100), 3)
@@ -169,13 +175,15 @@ while True:
         # controller.set_servo_angle(SERVO_LATERAL, servo_angles[SERVO_LATERAL])
 
     # Display debug info
-    cv2.putText(image, f"Lateral: {servo_angles[SERVO_LATERAL]:.1f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-    cv2.putText(image, f"FPS: {fps}", (10, 90), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 100, 100), 2, cv2.LINE_AA)
+    cv2.putText(image, f"Lateral: {servo_angles[SERVO_LATERAL]:.1f}", (10, 60), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 0), 1, cv2.LINE_AA)
+    cv2.putText(image, f"FPS: {fps}", (10, 30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+    cv2.putText(image, f"Animo SPEAR", (10, camHeight-10), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
     
-
-    cv2.imshow("Frame", image)
+    image = cv2.resize(image, (int(camWidth * screenSizeMultiplier), int(camHeight * screenSizeMultiplier)))
+    cv2.imshow("Robot Arm Controls", image)
     if cv2.waitKey(1) == 27:
         break
+
 
 video.release()
 cv2.destroyAllWindows()
